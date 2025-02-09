@@ -1,8 +1,10 @@
 const express = require("express");
+const dotenv = require("dotenv").config();
 const mongoose = require("mongoose");
-const Product = require("./models/product.model.js");
 const productRoute = require("./routes/product.routes.js");
 const app = express();
+
+const port = process.env.PORT || 5001;
 
 // Middleware.
 app.use(express.json());
@@ -22,8 +24,8 @@ mongoose
   )
   .then(() => {
     console.log("Connected to database!");
-    app.listen(3000, () => {
-      console.log("Server is running on port 3000");
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
     });
   })
   .catch(() => {
