@@ -9,14 +9,15 @@ connectDb();
 
 const port = process.env.PORT || 5001;
 
-// Middleware.
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(errorHandler);
 
 // Routes.
 app.use("/api/products", productRoute);
 app.use("/api/users", userRoute);
+
+// Middleware.
+app.use(errorHandler);
 
 // Start Server
 app.listen(port, () => {
