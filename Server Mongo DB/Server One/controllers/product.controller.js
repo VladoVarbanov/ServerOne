@@ -5,13 +5,13 @@ const asyncHandler = require("express-async-handler");
 //@route GET /api/products
 //@access private
 const getProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find({ user_id: req.user.id });
   res.status(200).json(products);
 });
 
 //@desc Get one product
 //@route GET /api/products
-//@access public
+//@access private
 const getProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) {
@@ -23,24 +23,35 @@ const getProduct = asyncHandler(async (req, res) => {
 
 //@desc Create new product
 //@route POST /api/products
-//@access public
+//@access private
 const createProduct = asyncHandler(async (req, res) => {
   const { name, quantity, price } = req.body;
   if (!name || !quantity || !price) {
     res.status(400);
     throw new Error("All fields are mandatory!");
   }
-  const product = await Product.create(req.body);
+  const product = await Product.create({
+    name,
+    quantity,
+    price,
+    user_id: req.user.id,
+  });
   res.status(201).json(product);
 });
 
 //@desc Update product
 //@route PUT /api/products/:id
-//@access public
+//@access private
 const updatedProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
+
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
+  }
+
+  if (product.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User don't have permission to update this product");
   }
 
   const updatedProduct = await Product.findByIdAndUpdate(
@@ -57,11 +68,16 @@ const updatedProduct = asyncHandler(async (req, res) => {
 
 //@desc Delete product
 //@route DELETE /api/products/:id
-//@access public
+//@access private
 const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
+
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
+  }
+  if (product.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User don't have permission to delete this product");
   }
 
   await Product.findByIdAndDelete(req.params.id);
